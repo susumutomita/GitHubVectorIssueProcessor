@@ -16,7 +16,7 @@ jobs:
           node-version: latest
           cache: 'npm'
       - name: Install packages via packages.json
-        run: npm install
+        run: make install
       - name: Run textlint
         run: |
-          npm run lint
+          make lint_text
