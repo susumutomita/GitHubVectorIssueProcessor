@@ -1,0 +1,22 @@
+name: textlint
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  textlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: 'npm'
+      - name: Install packages via packages.json
+        run: npm install
+      - name: Run textlint
+        run: |
+          npm run lint

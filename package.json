@@ -1,0 +1,31 @@
+{
+  "name": "GitHubVectorIssueProcessor",
+  "version": "1.0.0",
+  "description": "GitHubIssueProcessor",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint:text": "npx textlint '**/*.md'",
+    "lint:text:fix": "npx textlint --fix '**/*.md'",
+    "lint-staged": "lint-staged",
+    "prepare": "husky install"
+  },
+  "keywords": [],
+  "author": "Susumu Tomita <oyster880@gmail.com> (https://susumutomita.netlify.app/)",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "textlint": "^14.0.4",
+    "textlint-rule-ja-no-abusage": "^3.0.0",
+    "textlint-rule-ja-no-inappropriate-words": "^2.0.0",
+    "textlint-rule-no-double-negative-ja": "^2.0.1",
+    "textlint-rule-no-dropping-the-ra": "^3.0.0",
+    "textlint-rule-prefer-tari-tari": "^1.0.3",
+    "textlint-rule-preset-ja-spacing": "^2.2.0",
+    "textlint-rule-preset-ja-technical-writing": "^10.0.1",
+    "textlint-rule-spellcheck-tech-word": "^5.0.0"
+  }
+}
