@@ -1,10 +1,11 @@
-from config import Config
-from github_handler import GithubHandler
-from content_moderator import ContentModerator
-from handlers.qdrant_handler import QdrantHandler
-from handlers.pgvector_handler import PgVectorHandler
-from handlers.embedding_models import OpenAIModel, AzureOpenAIModel, LocalModel
 import openai
+
+from config import Config
+from content_moderator import ContentModerator
+from github_handler import GithubHandler
+from handlers.embedding_models import AzureOpenAIModel, LocalModel, OpenAIModel
+from handlers.pgvector_handler import PgVectorHandler
+from handlers.qdrant_handler import QdrantHandler
 
 
 def setup():
