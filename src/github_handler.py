@@ -1,5 +1,7 @@
 from github import Github
 
+from config import Config  # この行を追加
+
 
 class GithubHandler:
     def __init__(self, config: Config):
@@ -11,8 +13,8 @@ class GithubHandler:
         try:
             self.repo.create_label(name="toxic", color="ff0000")
             self.repo.create_label(name="duplicated", color="708090")
-        except:
-            pass
+        except Exception as e:
+            print(f"Failed to create labels: {e}")
 
     def add_label(self, label: str):
         self.issue.add_to_labels(label)

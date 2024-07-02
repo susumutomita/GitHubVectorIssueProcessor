@@ -23,9 +23,19 @@ class AzureOpenAIModel:
         return response["data"][0]["embedding"]
 
 
+def load_local_model(model_path: str):
+    # ローカルモデルのロード処理を実装
+    # ここでは仮の実装を示します
+    class MockModel:
+        def encode(self, text: str):
+            return [0.0] * 512  # ダミーのベクトルを返す
+
+    return MockModel()
+
+
 class LocalModel:
     def __init__(self, model_path: str):
-        self.model = load_local_model(model_path)  # ローカルモデルの読み込み関数
+        self.model = load_local_model(model_path)
 
     def create_embedding(self, text: str):
         embedding = self.model.encode(text)

@@ -12,11 +12,11 @@ clean:
 
 .PHONY: lint
 lint:
-	black . --check
-	isort . --check
+	black src/ --check
+	isort src/ --check-only
 	cd src && pylint . --rcfile=../.pylintrc
 	yamllint -c .yamllint .
-	flake8 .
+	flake8 src/
 
 .PHONY: lint_text
 lint_text:
@@ -28,7 +28,7 @@ lint_text_fix:
 
 .PHONY: format
 format:
-	black .
+	black src/
 	isort .
 
 .PHONY: before_commit

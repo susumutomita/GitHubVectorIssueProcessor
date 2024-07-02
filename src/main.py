@@ -1,4 +1,6 @@
 import openai
+from azure.ai.openai import OpenAIClient as AzureOpenAIClient
+from qdrant_client import QdrantClient
 
 from config import Config
 from content_moderator import ContentModerator
@@ -6,6 +8,7 @@ from github_handler import GithubHandler
 from handlers.embedding_models import AzureOpenAIModel, LocalModel, OpenAIModel
 from handlers.pgvector_handler import PgVectorHandler
 from handlers.qdrant_handler import QdrantHandler
+from issue_processor import IssueProcessor
 
 
 def setup():

@@ -7,10 +7,12 @@ class ContentModerator:
     def __init__(self, openai_client: openai.Client):
         self.openai_client = openai_client
 
+    # src/content_moderator.py
     def validate_image(self, text: str):
         image_url = self._extract_image_url(text)
         if not image_url:
             return False
+
         prompt = "この画像が暴力的、もしくは性的な画像の場合trueと返してください。"
         try:
             response = self.openai_client.chat.completions.create(
@@ -27,7 +29,8 @@ class ContentModerator:
                 max_tokens=1200,
             )
             return "true" in response.choices[0].message.content.lower()
-        except:
+        except Exception as e:
+            print(f"Error during image validation: {e}")
             return True
 
     def judge_violation(self, text: str):
