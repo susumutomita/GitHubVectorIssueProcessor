@@ -16,3 +16,12 @@ flake8
 python-dateutil
 setuptools>=65.5.1
 requests_toolbelt
+Flask==1.1.2
+flask-cors==3.0.10
+psycopg2-binary==2.8.6
+openai==0.5.0
+qdrant-client==0.9.0
+python-dotenv==0.15.0
+regex==2021.4.4
+PyGithub==1.55
+azure-ai-openai==0.1.0b5

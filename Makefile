@@ -1,5 +1,12 @@
 .PHONY: install
-install:
+install: install_python_deps install_node_deps setup_husky
+
+.PHONY: install_python_deps
+install_python_deps:
+	pip3 install -r requirements.txt
+
+.PHONY: install_node_deps
+install_node_deps:
 	npm install
 
 .PHONY: setup_husky
