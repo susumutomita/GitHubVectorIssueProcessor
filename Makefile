@@ -38,5 +38,13 @@ format:
 	black src/
 	isort .
 
+.PHONY: run
+run:
+	python3 src/main.py
+
+.PHONY: setup
+setup:
+	python3 setup.py
+
 .PHONY: before_commit
 before_commit: lint_text
