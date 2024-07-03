@@ -1,14 +1,14 @@
-import openai
+import os
+from src.config import Config
+from src.github_handler import GithubHandler
+from src.content_moderator import ContentModerator
+from src.handlers.qdrant_handler import QdrantHandler
+from src.handlers.pgvector_handler import PgVectorHandler
+from src.handlers.embedding_models import OpenAIModel, AzureOpenAIModel, LocalModel
+from openai import OpenAI
 from azure.ai.openai import OpenAIClient as AzureOpenAIClient
 from qdrant_client import QdrantClient
-
-from config import Config
-from content_moderator import ContentModerator
-from github_handler import GithubHandler
-from handlers.embedding_models import AzureOpenAIModel, LocalModel, OpenAIModel
-from handlers.pgvector_handler import PgVectorHandler
-from handlers.qdrant_handler import QdrantHandler
-from issue_processor import IssueProcessor
+from src.issue_processor import IssueProcessor
 
 
 def setup():
@@ -17,12 +17,14 @@ def setup():
     github_handler.create_labels()
 
     if config.ai_model_type == "openai":
-        openai_client = openai.Client(api_key=config.openai_api_key)
+        openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         embedding_model = OpenAIModel(openai_client)
     elif config.ai_model_type == "azure":
         azure_client = AzureOpenAIClient(
-            api_key=config.azure_api_key
-        )  # Azureクライアントの初期化
+            api_key=os.getenv("AZURE_API_KEY"),
+            api_version="2023-05-15",
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+        )
         embedding_model = AzureOpenAIModel(azure_client)
     elif config.ai_model_type == "local":
         embedding_model = LocalModel(config.local_model_path)
