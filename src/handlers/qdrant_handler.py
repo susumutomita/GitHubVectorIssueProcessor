@@ -1,5 +1,6 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct
+from typing import List
 
 
 class QdrantHandler:
