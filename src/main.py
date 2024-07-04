@@ -6,9 +6,8 @@ from src.handlers.qdrant_handler import QdrantHandler
 from src.handlers.pgvector_handler import PgVectorHandler
 from src.handlers.embedding_models import OpenAIModel, AzureOpenAIModel, LocalModel
 from openai import OpenAI
-from azure.ai.openai import OpenAIClient as AzureOpenAIClient
-from qdrant_client import QdrantClient
 from src.issue_processor import IssueProcessor
+from qdrant_client import QdrantClient
 
 
 def setup():

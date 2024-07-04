@@ -18,3 +18,10 @@ class QdrantHandler:
             collection_name="issue_collection", query_vector=embedding
         )
         return results[:3]
+
+    def _create_embedding(self, text: str) -> List[float]:
+        """テキストのembeddingを作成する"""
+        result = self.openai_client.embeddings.create(
+            input=[text], model=EMBEDDING_MODEL
+        )
+        return result.data[0].embedding
