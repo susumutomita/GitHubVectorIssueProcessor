@@ -7,6 +7,7 @@ class GithubHandler:
     def __init__(self, config: Config):
         self.github = Github(config.github_token)
         self.repo = self.github.get_repo(config.github_repo)
+        print("GITHUB_REPOSITORYの状態:", "取得済み" if self.repo else "見つかりません")
         self.issue = self.repo.get_issue(config.issue_number)
 
     def create_labels(self):
