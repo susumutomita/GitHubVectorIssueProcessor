@@ -1,12 +1,12 @@
 import os
-from src.config import Config
-from src.github_handler import GithubHandler
-from src.content_moderator import ContentModerator
-from src.handlers.qdrant_handler import QdrantHandler
-from src.handlers.pgvector_handler import PgVectorHandler
-from src.handlers.embedding_models import OpenAIModel, AzureOpenAIModel, LocalModel
+from config import Config
+from github_handler import GithubHandler
+from content_moderator import ContentModerator
+from handlers.qdrant_handler import QdrantHandler
+from handlers.pgvector_handler import PgVectorHandler
+from handlers.embedding_models import OpenAIModel, AzureOpenAIModel, LocalModel
 from openai import OpenAI
-from src.issue_processor import IssueProcessor
+from issue_processor import IssueProcessor
 from qdrant_client import QdrantClient
 
 
