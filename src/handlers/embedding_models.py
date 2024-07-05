@@ -1,42 +1,23 @@
-import openai
+from groq import Groq
 
 
-class OpenAIModel:
-    def __init__(self, client: openai.Client):
+class GroqModel:
+    def __init__(self, client: Groq):
         self.client = client
 
     def create_embedding(self, text: str):
-        result = self.client.embeddings.create(
-            input=[text], model="text-embedding-3-small"
+        chat_history = [
+            {
+                "role": "system",
+                "content": "あなたは便利なアシスタントです。テキストの埋め込みを生成してください。",
+            },
+            {"role": "user", "content": text},
+        ]
+        response = self.client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=chat_history,
+            max_tokens=100,
+            temperature=1.2,
         )
-        return result.data[0].embedding
-
-
-class AzureOpenAIModel:
-    def __init__(self, azure_client):
-        self.client = azure_client
-
-    def create_embedding(self, text: str):
-        response = self.client.embeddings.create(
-            input=[text], model="text-embedding-3-small"
-        )
-        return response["data"][0]["embedding"]
-
-
-def load_local_model(model_path: str):
-    # ローカルモデルのロード処理を実装
-    # ここでは仮の実装を示します
-    class MockModel:
-        def encode(self, text: str):
-            return [0.0] * 512  # ダミーのベクトルを返す
-
-    return MockModel()
-
-
-class LocalModel:
-    def __init__(self, model_path: str):
-        self.model = load_local_model(model_path)
-
-    def create_embedding(self, text: str):
-        embedding = self.model.encode(text)
-        return embedding.tolist()
+        # Assuming the response contains the embedding in a field named 'embedding'
+        return response.choices[0].message.embedding

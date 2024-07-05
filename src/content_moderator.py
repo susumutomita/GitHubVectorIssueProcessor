@@ -1,13 +1,11 @@
 import re
-
-import openai
+from groq import Groq
 
 
 class ContentModerator:
-    def __init__(self, openai_client: openai.Client):
-        self.openai_client = openai_client
+    def __init__(self, client: Groq):
+        self.client = client
 
-    # src/content_moderator.py
     def validate_image(self, text: str):
         image_url = self._extract_image_url(text)
         if not image_url:
@@ -15,18 +13,18 @@ class ContentModerator:
 
         prompt = "この画像が暴力的、もしくは性的な画像の場合trueと返してください。"
         try:
-            response = self.openai_client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {"type": "image_url", "image_url": {"url": image_url}},
-                        ],
-                    }
-                ],
-                max_tokens=1200,
+            chat_history = [
+                {
+                    "role": "system",
+                    "content": "あなたは便利なアシスタントです。画像の内容をチェックしてください。",
+                },
+                {"role": "user", "content": f"画像URL: {image_url}\n{prompt}"},
+            ]
+            response = self.client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=chat_history,
+                max_tokens=100,
+                temperature=1.2,
             )
             return "true" in response.choices[0].message.content.lower()
         except Exception as e:
@@ -34,8 +32,22 @@ class ContentModerator:
             return True
 
     def judge_violation(self, text: str):
-        response = self.openai_client.moderations.create(input=text)
-        return response.results[0].flagged or self.validate_image(text)
+        chat_history = [
+            {
+                "role": "system",
+                "content": "あなたは便利なアシスタントです。テキストの内容をチェックしてください。",
+            },
+            {"role": "user", "content": text},
+        ]
+        response = self.client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=chat_history,
+            max_tokens=100,
+            temperature=1.2,
+        )
+        return "true" in response.choices[
+            0
+        ].message.content.lower() or self.validate_image(text)
 
     @staticmethod
     def _extract_image_url(text: str):
