@@ -5,7 +5,7 @@ from github import Github
 from github.Issue import Issue
 from github.Repository import Repository
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointStruct
+from qdrant_client.models import PointStruct, VectorParams, Distance
 from groq import Groq
 
 # GitHub Actions環境で実行されていない場合のみ.envファイルを読み込む
@@ -168,7 +168,12 @@ class QdrantHandler:
             messages=[{"role": "user", "content": text}],
             max_tokens=1200,
         )
-        return response.choices[0].message.content
+        # ここで、レスポンスをベクトルに変換する必要があります
+        # 仮にベクトルがレスポンスのコンテンツに含まれていると仮定します
+        embedding_str = response.choices[0].message.content.strip()
+        # カンマ区切りの文字列をリストに変換
+        embedding = list(map(float, embedding_str.split(",")))
+        return embedding
 
 
 class IssueProcessor:
