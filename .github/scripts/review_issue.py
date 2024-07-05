@@ -6,7 +6,7 @@ from github.Issue import Issue
 from github.Repository import Repository
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct
-import openai
+from groq import Groq
 
 # GitHub Actions環境で実行されていない場合のみ.envファイルを読み込む
 if not os.getenv("GITHUB_ACTIONS"):
@@ -15,9 +15,9 @@ if not os.getenv("GITHUB_ACTIONS"):
     load_dotenv()
 
 # 定数
-EMBEDDING_MODEL = "text-embedding-3-small"
+EMBEDDING_MODEL = "llama3-70b-8192"
 COLLECTION_NAME = "issue_collection"
-GPT_MODEL = "gpt-4o"
+GPT_MODEL = "llama3-70b-8192"
 MAX_RESULTS = 3
 
 
@@ -79,8 +79,8 @@ class GithubHandler:
 
 
 class ContentModerator:
-    def __init__(self, openai_client: openai.Client):
-        self.openai_client = openai_client
+    def __init__(self, groq_client: Groq):
+        self.groq_client = groq_client
 
     def validate_image(self, text: str) -> bool:
         """画像の内容が不適切かどうかを判断する"""
@@ -90,7 +90,7 @@ class ContentModerator:
 
         prompt = "この画像が暴力的、もしくは性的な画像の場合trueと返してください。"
         try:
-            response = self.openai_client.chat.completions.create(
+            response = self.groq_client.chat.completions.create(
                 model=GPT_MODEL,
                 messages=[
                     {
@@ -109,8 +109,19 @@ class ContentModerator:
 
     def judge_violation(self, text: str) -> bool:
         """テキストと画像の内容が不適切かどうかを判断する"""
-        response = self.openai_client.moderations.create(input=text)
-        return response.results[0].flagged or self.validate_image(text)
+        prompt = "このテキストが不適切な内容を含む場合trueと返してください。"
+        try:
+            response = self.groq_client.chat.completions.create(
+                model=GPT_MODEL,
+                messages=[
+                    {"role": "user", "content": prompt},
+                    {"role": "user", "content": text},
+                ],
+                max_tokens=1200,
+            )
+            return "true" in response.choices[0].message.content.lower()
+        except:
+            return True
 
     @staticmethod
     def _extract_image_url(text: str) -> str:
@@ -120,9 +131,21 @@ class ContentModerator:
 
 
 class QdrantHandler:
-    def __init__(self, client: QdrantClient, openai_client: openai.Client):
+    def __init__(self, client: QdrantClient, groq_client: Groq):
         self.client = client
-        self.openai_client = openai_client
+        self.groq_client = groq_client
+        self._ensure_collection_exists()
+
+    def _ensure_collection_exists(self):
+        try:
+            self.client.get_collection(collection_name=COLLECTION_NAME)
+        except Exception as e:
+            print(f"Collection not found, creating a new one. Details: {e}")
+            self.client.create_collection(
+                collection_name=COLLECTION_NAME,
+                vectors_config=VectorParams(size=8192, distance=Distance.COSINE),
+            )
+            print("Collection 'issue_collection' created successfully.")
 
     def add_issue(self, text: str, issue_number: int):
         """新しい問題をQdrantに追加する"""
@@ -140,10 +163,12 @@ class QdrantHandler:
 
     def _create_embedding(self, text: str) -> List[float]:
         """テキストのembeddingを作成する"""
-        result = self.openai_client.embeddings.create(
-            input=[text], model=EMBEDDING_MODEL
+        response = self.groq_client.chat.completions.create(
+            model=EMBEDDING_MODEL,
+            messages=[{"role": "user", "content": text}],
+            max_tokens=1200,
         )
-        return result.data[0].embedding
+        return response.choices[0].message.content
 
 
 class IssueProcessor:
@@ -152,12 +177,10 @@ class IssueProcessor:
         github_handler: GithubHandler,
         content_moderator: ContentModerator,
         qdrant_handler: QdrantHandler,
-        openai_client: openai.Client,
     ):
         self.github_handler = github_handler
         self.content_moderator = content_moderator
         self.qdrant_handler = qdrant_handler
-        self.openai_client = openai_client
 
     def process_issue(self, issue_content: str):
         """Issueを処理する"""
@@ -193,12 +216,12 @@ class IssueProcessor:
     ) -> int:
         """重複をチェックする"""
         prompt = self._create_duplication_check_prompt(issue_content, similar_issues)
-        completion = self.openai_client.chat.completions.create(
+        response = self.qdrant_handler.groq_client.chat.completions.create(
             model=GPT_MODEL,
             max_tokens=1024,
             messages=[{"role": "system", "content": prompt}],
         )
-        review = completion.choices[0].message.content
+        review = response.choices[0].message.content
         if ":" in review:
             review = review.split(":")[-1]
         return int(review) if review.isdecimal() and review != "0" else 0
@@ -235,20 +258,18 @@ def setup():
     github_handler = GithubHandler(config)
     github_handler.create_labels()
 
-    openai_client = openai.Client()
-    content_moderator = ContentModerator(openai_client)
+    groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    content_moderator = ContentModerator(groq_client)
 
     qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
-    qdrant_handler = QdrantHandler(qdrant_client, openai_client)
+    qdrant_handler = QdrantHandler(qdrant_client, groq_client)
 
-    return github_handler, content_moderator, qdrant_handler, openai_client
+    return github_handler, content_moderator, qdrant_handler
 
 
 def main():
-    github_handler, content_moderator, qdrant_handler, openai_client = setup()
-    issue_processor = IssueProcessor(
-        github_handler, content_moderator, qdrant_handler, openai_client
-    )
+    github_handler, content_moderator, qdrant_handler = setup()
+    issue_processor = IssueProcessor(github_handler, content_moderator, qdrant_handler)
     issue_content = f"{github_handler.issue.title}\n{github_handler.issue.body}"
     issue_processor.process_issue(issue_content)
 
