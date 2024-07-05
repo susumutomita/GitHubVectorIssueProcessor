@@ -20,4 +20,5 @@ class GroqModel:
             temperature=1.2,
         )
         # Assuming the response contains the embedding in a field named 'embedding'
-        return response.choices[0].message.embedding
+        # return response.choices[0].message.content
+        return [0.0] * 512
