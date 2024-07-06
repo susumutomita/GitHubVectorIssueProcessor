@@ -171,8 +171,13 @@ class QdrantHandler:
         # ここで、レスポンスをベクトルに変換する必要があります
         # 仮にベクトルがレスポンスのコンテンツに含まれていると仮定します
         embedding_str = response.choices[0].message.content.strip()
-        # カンマ区切りの文字列をリストに変換
-        embedding = list(map(float, embedding_str.split(",")))
+        # ここで、embedding_strが予期する形式であるかをチェックします
+        try:
+            embedding = list(map(float, embedding_str.split(",")))
+        except ValueError:
+            raise ValueError(
+                "Received response is not a valid embedding vector: " + embedding_str
+            )
         return embedding
 
 
