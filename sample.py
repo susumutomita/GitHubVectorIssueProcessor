@@ -267,6 +267,10 @@ def setup():
     content_moderator = ContentModerator(groq_client)
 
     qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
+    qdrant_client.recreate_collection(
+        collection_name="GitHubVectorIssueProcessor",
+        vectors_config=VectorParams(size=716, distance=Distance.COSINE),
+    )
     qdrant_handler = QdrantHandler(qdrant_client, groq_client)
 
     return github_handler, content_moderator, qdrant_handler
