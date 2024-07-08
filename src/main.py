@@ -1,13 +1,15 @@
 import os
-from config import Config
-from github_handler import GithubHandler
-from content_moderator import ContentModerator
-from handlers.qdrant_handler import QdrantHandler
-from handlers.pgvector_handler import PgVectorHandler
-from handlers.embedding_models import GroqModel
-from issue_processor import IssueProcessor
-from qdrant_client import QdrantClient
+
 from groq import Groq
+from qdrant_client import QdrantClient
+
+from config import Config
+from content_moderator import ContentModerator
+from github_handler import GithubHandler
+from handlers.embedding_models import GroqModel
+from handlers.pgvector_handler import PgVectorHandler
+from handlers.qdrant_handler import QdrantHandler
+from issue_processor import IssueProcessor
 
 
 def setup():

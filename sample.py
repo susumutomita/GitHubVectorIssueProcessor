@@ -1,13 +1,12 @@
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import regex as re
-from github import Github
-from github.Issue import Issue
-from github.Repository import Repository
-from qdrant_client import QdrantClient
-from qdrant_client.models import PointStruct, VectorParams, Distance
-from groq import Groq
 import requests
+from github import Github
+from groq import Groq
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 # GitHub Actions環境で実行されていない場合のみ.envファイルを読み込む
 if not os.getenv("GITHUB_ACTIONS"):
