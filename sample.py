@@ -1,12 +1,13 @@
 import os
-from typing import Any, Dict, List
-
+from typing import List, Dict, Any
 import regex as re
-import requests
 from github import Github
-from groq import Groq
+from github.Issue import Issue
+from github.Repository import Repository
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import PointStruct, VectorParams, Distance
+from groq import Groq
+import requests
 
 # GitHub Actions環境で実行されていない場合のみ.envファイルを読み込む
 if not os.getenv("GITHUB_ACTIONS"):
@@ -170,7 +171,10 @@ class QdrantHandler:
             "Authorization": f"Bearer {os.getenv('NOMIC_API_KEY')}",
             "Content-Type": "application/json",
         }
-        data = {"model": EMBEDDING_MODEL, "texts": [text]}
+        data = {
+            "model": EMBEDDING_MODEL,
+            "texts": [text],
+        }
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
             embedding = response.json()["embeddings"][0]
@@ -239,10 +243,7 @@ class IssueProcessor:
     @staticmethod
     def _create_duplication_check_prompt(issue_content: str, similar_issues):
         similar_issues_text = "\n".join(
-            [
-                f'id:{issue["id"]}\n内容:{issue["payload"]["text"]}'
-                for issue in similar_issues
-            ]
+            [f'id:{issue.id}\n内容:{issue.payload["text"]}' for issue in similar_issues]
         )
         return f"""
         以下はこのレポジトリに寄せられた改善提案です。
@@ -267,10 +268,16 @@ def setup():
     content_moderator = ContentModerator(groq_client)
 
     qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
-    qdrant_client.recreate_collection(
-        collection_name="GitHubVectorIssueProcessor",
-        vectors_config=VectorParams(size=768, distance=Distance.COSINE),
-    )
+    try:
+        qdrant_client.get_collection(collection_name=COLLECTION_NAME)
+    except Exception as e:
+        print(f"Collection not found, creating a new one. Details: {e}")
+        qdrant_client.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+        )
+        print("Collection 'issue_collection' created successfully.")
+
     qdrant_handler = QdrantHandler(qdrant_client, groq_client)
 
     return github_handler, content_moderator, qdrant_handler

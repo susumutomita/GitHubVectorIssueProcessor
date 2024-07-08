@@ -1,13 +1,13 @@
 import os
-from typing import Any, Dict, List
-
+from typing import List, Dict, Any
 import regex as re
 from github import Github
 from github.Issue import Issue
 from github.Repository import Repository
-from groq import Groq
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import PointStruct, VectorParams, Distance
+from groq import Groq
+import requests
 
 # GitHub Actions環境で実行されていない場合のみ.envファイルを読み込む
 if not os.getenv("GITHUB_ACTIONS"):
@@ -16,7 +16,7 @@ if not os.getenv("GITHUB_ACTIONS"):
     load_dotenv()
 
 # 定数
-EMBEDDING_MODEL = "llama3-70b-8192"
+EMBEDDING_MODEL = "nomic-embed-text-v1"
 COLLECTION_NAME = "issue_collection"
 GPT_MODEL = "llama3-70b-8192"
 MAX_RESULTS = 3
@@ -144,7 +144,9 @@ class QdrantHandler:
             print(f"Collection not found, creating a new one. Details: {e}")
             self.client.create_collection(
                 collection_name=COLLECTION_NAME,
-                vectors_config=VectorParams(size=8192, distance=Distance.COSINE),
+                vectors_config=VectorParams(
+                    size=768, distance=Distance.COSINE
+                ),  # 768に変更
             )
             print("Collection 'issue_collection' created successfully.")
 
@@ -164,22 +166,21 @@ class QdrantHandler:
 
     def _create_embedding(self, text: str) -> List[float]:
         """テキストのembeddingを作成する"""
-        response = self.groq_client.chat.completions.create(
-            model=EMBEDDING_MODEL,
-            messages=[{"role": "user", "content": text}],
-            max_tokens=1200,
-        )
-        # ここで、レスポンスをベクトルに変換する必要があります
-        # 仮にベクトルがレスポンスのコンテンツに含まれていると仮定します
-        embedding_str = response.choices[0].message.content.strip()
-        # ここで、embedding_strが予期する形式であるかをチェックします
-        try:
-            embedding = list(map(float, embedding_str.split(",")))
-        except ValueError:
-            raise ValueError(
-                "Received response is not a valid embedding vector: " + embedding_str
-            )
-        return embedding
+        url = "https://api-atlas.nomic.ai/v1/embedding/text"
+        headers = {
+            "Authorization": f"Bearer {os.getenv('NOMIC_API_KEY')}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "model": EMBEDDING_MODEL,
+            "texts": [text],
+        }
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            embedding = response.json()["embeddings"][0]
+            return embedding
+        else:
+            raise ValueError(f"Failed to create embedding: {response.content}")
 
 
 class IssueProcessor:
@@ -222,10 +223,7 @@ class IssueProcessor:
         )
         self.github_handler.close_issue()
 
-    def _check_duplication(
-        self, issue_content: str, similar_issues: List[Dict[str, Any]]
-    ) -> int:
-        """重複をチェックする"""
+    def _check_duplication(self, issue_content: str, similar_issues):
         prompt = self._create_duplication_check_prompt(issue_content, similar_issues)
         response = self.qdrant_handler.groq_client.chat.completions.create(
             model=GPT_MODEL,
@@ -243,15 +241,12 @@ class IssueProcessor:
         self.github_handler.add_comment(f"#{duplicate_id} と重複しているかもしれません")
 
     @staticmethod
-    def _create_duplication_check_prompt(
-        issue_content: str, similar_issues: List[Dict[str, Any]]
-    ) -> str:
-        """重複チェック用のプロンプトを作成する"""
+    def _create_duplication_check_prompt(issue_content: str, similar_issues):
         similar_issues_text = "\n".join(
             [f'id:{issue.id}\n内容:{issue.payload["text"]}' for issue in similar_issues]
         )
         return f"""
-        以下はレポジトリの改善要望です。
+        以下はこのレポジトリに寄せられた改善提案です。
         {issue_content}
         この投稿を読み、以下の過去提案の中に重複する提案があるかを判断してください。
         {similar_issues_text}
@@ -273,6 +268,16 @@ def setup():
     content_moderator = ContentModerator(groq_client)
 
     qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
+    try:
+        qdrant_client.get_collection(collection_name=COLLECTION_NAME)
+    except Exception as e:
+        print(f"Collection not found, creating a new one. Details: {e}")
+        qdrant_client.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+        )
+        print("Collection 'issue_collection' created successfully.")
+
     qdrant_handler = QdrantHandler(qdrant_client, groq_client)
 
     return github_handler, content_moderator, qdrant_handler
