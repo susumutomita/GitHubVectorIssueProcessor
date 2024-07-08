@@ -49,6 +49,12 @@ class Config:
             print(f"GITHUB_EVENT_ISSUE_NUMBER: {self.issue_number}")
         else:
             print("GITHUB_EVENT_ISSUE_NUMBERが見つかりません")
+
+        self.nomic_api_key = os.getenv("NOMIC_API_KEY")
+        if self.nomic_api_key is None:
+            print("NOMIC_API_KEYが見つかりません ...")
+        else:
+            print("NOMIC_API_KEYからトークンを正常に取得しました。")
         print("設定の初期化が完了しました。")
 
 
