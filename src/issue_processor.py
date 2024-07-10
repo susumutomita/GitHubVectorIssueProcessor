@@ -1,20 +1,17 @@
 class IssueProcessor:
-    def __init__(
-        self, github_handler, content_moderator, vector_handler, openai_client
-    ):
+    def __init__(self, github_handler, content_moderator, qdrant_handler):
         self.github_handler = github_handler
         self.content_moderator = content_moderator
-        self.vector_handler = vector_handler
-        self.openai_client = openai_client
+        self.qdrant_handler = qdrant_handler
 
-    def process_issue(self, issue_content: str):
+    def process_issue(self, issue_content):
         if self.content_moderator.judge_violation(issue_content):
             self._handle_violation()
             return
 
-        similar_issues = self.vector_handler.search_similar_issues(issue_content)
+        similar_issues = self.qdrant_handler.search_similar_issues(issue_content)
         if not similar_issues:
-            self.vector_handler.add_issue(
+            self.qdrant_handler.add_issue(
                 issue_content, self.github_handler.issue.number
             )
             return
@@ -23,7 +20,7 @@ class IssueProcessor:
         if duplicate_id:
             self._handle_duplication(duplicate_id)
         else:
-            self.vector_handler.add_issue(
+            self.qdrant_handler.add_issue(
                 issue_content, self.github_handler.issue.number
             )
 
@@ -34,24 +31,24 @@ class IssueProcessor:
         )
         self.github_handler.close_issue()
 
-    def _check_duplication(self, issue_content: str, similar_issues):
+    def _check_duplication(self, issue_content, similar_issues):
         prompt = self._create_duplication_check_prompt(issue_content, similar_issues)
-        completion = self.openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
+        response = self.qdrant_handler.groq_client.chat.completions.create(
+            model="llama3-70b-8192",
             max_tokens=1024,
             messages=[{"role": "system", "content": prompt}],
         )
-        review = completion.choices[0].message.content
+        review = response.choices[0].message.content
         if ":" in review:
             review = review.split(":")[-1]
         return int(review) if review.isdecimal() and review != "0" else 0
 
-    def _handle_duplication(self, duplicate_id: int):
+    def _handle_duplication(self, duplicate_id):
         self.github_handler.add_label("duplicated")
         self.github_handler.add_comment(f"#{duplicate_id} と重複しているかもしれません")
 
     @staticmethod
-    def _create_duplication_check_prompt(issue_content: str, similar_issues):
+    def _create_duplication_check_prompt(issue_content, similar_issues):
         similar_issues_text = "\n".join(
             [f'id:{issue.id}\n内容:{issue.payload["text"]}' for issue in similar_issues]
         )

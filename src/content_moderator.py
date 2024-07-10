@@ -1,56 +1,50 @@
-import re
-
-from groq import Groq
+import regex as re
 
 
 class ContentModerator:
-    def __init__(self, client: Groq):
-        self.client = client
+    def __init__(self, groq_client):
+        self.groq_client = groq_client
 
-    def validate_image(self, text: str):
+    def validate_image(self, text):
         image_url = self._extract_image_url(text)
         if not image_url:
             return False
 
         prompt = "この画像が暴力的、もしくは性的な画像の場合trueと返してください。"
         try:
-            chat_history = [
-                {
-                    "role": "system",
-                    "content": "あなたは便利なアシスタントです。画像の内容をチェックしてください。",
-                },
-                {"role": "user", "content": f"画像URL: {image_url}\n{prompt}"},
-            ]
-            response = self.client.chat.completions.create(
+            response = self.groq_client.chat.completions.create(
                 model="llama3-70b-8192",
-                messages=chat_history,
-                max_tokens=100,
-                temperature=1.2,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": image_url}},
+                        ],
+                    }
+                ],
+                max_tokens=1200,
             )
             return "true" in response.choices[0].message.content.lower()
-        except Exception as e:
-            print(f"Error during image validation: {e}")
+        except:
             return True
 
-    def judge_violation(self, text: str):
-        chat_history = [
-            {
-                "role": "system",
-                "content": "あなたは便利なアシスタントです。テキストの内容をチェックしてください。",
-            },
-            {"role": "user", "content": text},
-        ]
-        response = self.client.chat.completions.create(
-            model="llama3-70b-8192",
-            messages=chat_history,
-            max_tokens=100,
-            temperature=1.2,
-        )
-        return "true" in response.choices[
-            0
-        ].message.content.lower() or self.validate_image(text)
+    def judge_violation(self, text):
+        prompt = "このテキストが不適切な内容を含む場合trueと返してください。"
+        try:
+            response = self.groq_client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[
+                    {"role": "user", "content": prompt},
+                    {"role": "user", "content": text},
+                ],
+                max_tokens=1200,
+            )
+            return "true" in response.choices[0].message.content.lower()
+        except:
+            return True
 
     @staticmethod
-    def _extract_image_url(text: str):
+    def _extract_image_url(text):
         match = re.search(r"!\[[^\s]+\]\((https://[^\s]+)\)", text)
         return match[1] if match and len(match) > 1 else ""

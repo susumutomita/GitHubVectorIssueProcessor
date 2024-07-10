@@ -1,15 +1,12 @@
-import os
-
+from config import Config
+from github_handler import GithubHandler
+from content_moderator import ContentModerator
+from qdrant_handler import QdrantHandler
+from issue_processor import IssueProcessor
 from groq import Groq
 from qdrant_client import QdrantClient
-
-from config import Config
-from content_moderator import ContentModerator
-from github_handler import GithubHandler
-from handlers.embedding_models import GroqModel
-from handlers.pgvector_handler import PgVectorHandler
-from handlers.qdrant_handler import QdrantHandler
-from issue_processor import IssueProcessor
+from qdrant_client.models import VectorParams, Distance
+import os
 
 
 def setup():
@@ -17,28 +14,28 @@ def setup():
     github_handler = GithubHandler(config)
     github_handler.create_labels()
 
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-    embedding_model = GroqModel(client)
+    groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    content_moderator = ContentModerator(groq_client)
 
-    if config.qd_url:
-        qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
-        vector_handler = QdrantHandler(qdrant_client, embedding_model)
-    else:
-        vector_handler = PgVectorHandler(config.db_connection_str, embedding_model)
+    qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
+    try:
+        qdrant_client.get_collection(collection_name="issue_collection")
+    except Exception as e:
+        print(f"Collection not found, creating a new one. Details: {e}")
+        qdrant_client.create_collection(
+            collection_name="issue_collection",
+            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+        )
+        print("Collection 'issue_collection' created successfully.")
 
-    return (
-        github_handler,
-        ContentModerator(client),
-        vector_handler,
-        embedding_model,
-    )
+    qdrant_handler = QdrantHandler(qdrant_client, groq_client)
+
+    return github_handler, content_moderator, qdrant_handler
 
 
 def main():
-    github_handler, content_moderator, vector_handler, embedding_model = setup()
-    issue_processor = IssueProcessor(
-        github_handler, content_moderator, vector_handler, embedding_model
-    )
+    github_handler, content_moderator, qdrant_handler = setup()
+    issue_processor = IssueProcessor(github_handler, content_moderator, qdrant_handler)
     issue_content = f"{github_handler.issue.title}\n{github_handler.issue.body}"
     issue_processor.process_issue(issue_content)
 
