@@ -1,12 +1,14 @@
-from config import Config
-from github_handler import GithubHandler
-from content_moderator import ContentModerator
-from qdrant_handler import QdrantHandler
-from issue_processor import IssueProcessor
+import os
+
 from groq import Groq
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance
-import os
+from qdrant_client.models import Distance, VectorParams
+
+from config import Config
+from content_moderator import ContentModerator
+from github_handler import GithubHandler
+from issue_processor import IssueProcessor
+from qdrant_handler import QdrantHandler
 
 
 def setup():

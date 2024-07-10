@@ -1,7 +1,8 @@
 import os
+
 import requests
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointStruct, VectorParams, Distance
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 
 class QdrantHandler:

@@ -1,10 +1,10 @@
-name: textlint
+name: ci
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  textlint:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

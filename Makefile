@@ -47,4 +47,4 @@ setup:
 	python3 setup.py
 
 .PHONY: before_commit
-before_commit: lint_text
+before_commit: format lint_text
