@@ -4,6 +4,7 @@ install: install_python_deps install_node_deps setup_husky
 .PHONY: install_python_deps
 install_python_deps:
 	pip3 install -r requirements.txt
+	pip3 install .
 
 .PHONY: install_node_deps
 install_node_deps:
@@ -40,11 +41,7 @@ format:
 
 .PHONY: run
 run:
-	python3 src/main.py
-
-.PHONY: setup
-setup:
-	python3 setup.py
+	github-vector-issue-processor
 
 .PHONY: before_commit
 before_commit: format lint lint_text
