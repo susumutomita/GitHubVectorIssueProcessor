@@ -1,3 +1,4 @@
+[![ci](https://github.com/susumutomita/GitHubVectorIssueProcessor/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/susumutomita/GitHubVectorIssueProcessor/actions/workflows/ci.yml)
 ![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/susumutomita/GitHubVectorIssueProcessor)
 ![GitHub top language](https://img.shields.io/github/languages/top/susumutomita/GitHubVectorIssueProcessor)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/susumutomita/GitHubVectorIssueProcessor)
@@ -20,28 +21,25 @@ The primary use case of GitHubVectorIssueProcessor is to automate the management
 
 ## Code Structure
 
-```structure.txt
+```plaintext
 GitHubVectorIssueProcessor/
 ├── .github/
 │   ├── workflows/
-│   │   └── main.yml  # GitHub Actionsのワークフロー定義
+│   │   └── ci.yml  # GitHub Actionsのワークフロー定義
 ├── src/
-│   ├── handlers/
-│   │   ├── qdrant_handler.py  # Qdrantハンドラー
-│   │   ├── pgvector_handler.py  # PostgreSQLハンドラー
-│   │   └── embedding_models.py  # AIモデルのハンドラー
+│   ├── __init__.py  # パッケージ化のためのファイル
 │   ├── config.py  # 設定クラス
-│   ├── github_handler.py  # GitHubハンドラー
 │   ├── content_moderator.py  # コンテンツモデレータ
+│   ├── github_handler.py  # GitHubハンドラー
 │   ├── issue_processor.py  # Issueプロセッサ
-│   └── main.py  # メインエントリーポイント
+│   ├── main.py  # メインエントリーポイント
+│   └── qdrant_handler.py  # Qdrantハンドラー
 ├── .env.example  # 環境変数のサンプルファイル
 ├── .gitignore  # Gitの無視ファイル
 ├── LICENSE  # ライセンスファイル
 ├── README.md  # 説明ファイル
 ├── requirements.txt  # 依存関係
 └── setup.py  # パッケージ設定
-
 ```
 
 ## Installation
@@ -61,56 +59,55 @@ GitHubVectorIssueProcessor/
     cd GitHubVectorIssueProcessor
     ```
 
-2. Create and activate a virtual environment:
+2. Install dependencies:
 
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
-
-3. Install dependencies:
-
-    ```bash
-    pip install -r requirements.txt
+    make install
     ```
 
 4. Set up your environment variables:
 
-    Create a `.env` file in the root directory and add the following variables:
+    Create a `.env` file in the root directory based on the `.env_sample` file and add the necessary variables:
 
     ```plaintext
-    GITHUB_TOKEN=your_github_token
-    QD_API_KEY=your_qdrant_api_key
-    QD_URL=your_qdrant_url
-    DB_CONNECTION_STR=your_postgresql_connection_string
-    GITHUB_REPOSITORY=your_github_repository
-    GITHUB_EVENT_ISSUE_NUMBER=your_github_issue_number
-    AI_MODEL_TYPE=openai|azure|local
-    OPENAI_API_KEY=your_openai_api_key
-    AZURE_API_KEY=your_azure_api_key
-    LOCAL_MODEL_PATH=path_to_your_local_model
+    # Groq API Key
+    GROQ_API_KEY=gsk_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    # Qdrant URL and API Key
+    QD_URL=https://xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.us-east4-0.gcp.cloud.qdrant.io
+    QD_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    # GitHub Event Issue Number
+    GITHUB_EVENT_ISSUE_NUMBER=7
+
+    # Nomic API Key
+    NOMIC_API_KEY=nk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    # Python Path
+    PYTHONPATH=$(pwd)/src:$PYTHONPATH
     ```
+
+    Replace the placeholder values (`XXXXXXXXXXXX...`) with your actual API keys and relevant information.
 
 ## Usage
 
 1. To process GitHub issues, run the following command:
 
     ```bash
-    python main.py
+    make run
     ```
-
-2. You can configure the tool to use different vector databases and AI models by setting the appropriate environment variables in the `.env` file.
 
 ## Supported Vector Databases
 
 - Qdrant
 - PostgreSQL (local)
-- Aurora Serverless PostgreSQL
+- Azure AI search
 
 ## Supported AI Models
 
 - OpenAI
 - Azure OpenAI
+- Groq
 - Local models (e.g., Llama3)
 
 ## Inspiration
