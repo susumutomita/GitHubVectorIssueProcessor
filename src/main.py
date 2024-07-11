@@ -1,17 +1,28 @@
+"""
+This module sets up the necessary components and processes GitHub issues using the Groq client,
+Qdrant vector database, and other handlers.
+"""
+
 import os
 
 from groq import Groq
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 
-from config import Config
-from content_moderator import ContentModerator
-from github_handler import GithubHandler
-from issue_processor import IssueProcessor
-from qdrant_handler import QdrantHandler
+from src.config import Config
+from src.content_moderator import ContentModerator
+from src.github_handler import GithubHandler
+from src.issue_processor import IssueProcessor
+from src.qdrant_handler import QdrantHandler
 
 
 def setup():
+    """
+    Set up the necessary components for processing GitHub issues.
+
+    Returns:
+        tuple: A tuple containing the GitHub handler, content moderator, and Qdrant handler.
+    """
     config = Config()
     github_handler = GithubHandler(config)
     github_handler.create_labels()
@@ -22,7 +33,7 @@ def setup():
     qdrant_client = QdrantClient(url=config.qd_url, api_key=config.qd_api_key)
     try:
         qdrant_client.get_collection(collection_name="issue_collection")
-    except Exception as e:
+    except qdrant_client.http.exceptions.UnexpectedResponse as e:
         print(f"Collection not found, creating a new one. Details: {e}")
         qdrant_client.create_collection(
             collection_name="issue_collection",
@@ -36,6 +47,9 @@ def setup():
 
 
 def main():
+    """
+    Main function to process GitHub issues.
+    """
     github_handler, content_moderator, qdrant_handler = setup()
     issue_processor = IssueProcessor(github_handler, content_moderator, qdrant_handler)
     issue_content = f"{github_handler.issue.title}\n{github_handler.issue.body}"
