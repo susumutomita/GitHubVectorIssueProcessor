@@ -37,9 +37,12 @@ class GithubHandler:
             self.repo.create_label(name="toxic", color="ff0000")
             self.repo.create_label(name="duplicated", color="708090")
         except UnknownObjectException:
-            pass  # Label already exists
+            pass
         except GithubException as e:
-            raise RuntimeError(f"Failed to create label: {e}") from e
+            if "already_exists" in str(e):
+                pass
+            else:
+                raise RuntimeError(f"Failed to create label: {e}") from e
 
     def add_label(self, label):
         """
