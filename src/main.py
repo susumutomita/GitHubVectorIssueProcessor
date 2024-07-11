@@ -9,11 +9,11 @@ from groq import Groq
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 
-from config import Config
-from content_moderator import ContentModerator
-from github_handler import GithubHandler
-from issue_processor import IssueProcessor
-from qdrant_handler import QdrantHandler
+from src.config import Config
+from src.content_moderator import ContentModerator
+from src.github_handler import GithubHandler
+from src.issue_processor import IssueProcessor
+from src.qdrant_handler import QdrantHandler
 
 
 def setup():
