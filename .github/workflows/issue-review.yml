@@ -15,26 +15,26 @@ jobs:
     timeout-minutes: 10
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        make install
+      - name: Install dependencies
+        run: |
+          make install
 
-    - name: Review Issue with LLM
-      env:
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        QD_API_KEY: ${{ secrets.QD_API_KEY }}
-        QD_URL: ${{ secrets.QD_URL }}
-        NOMIC_API_KEY: ${{ secrets.NOMIC_API_KEY }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-      run: |
-        make run
+      - name: Review Issue with LLM
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QD_API_KEY: ${{ secrets.QD_API_KEY }}
+          QD_URL: ${{ secrets.QD_URL }}
+          NOMIC_API_KEY: ${{ secrets.NOMIC_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          make run
