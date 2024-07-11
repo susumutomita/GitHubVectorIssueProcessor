@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open("requirements.txt", "r") as f:
     required_packages = f.read().splitlines()
@@ -6,14 +6,12 @@ with open("requirements.txt", "r") as f:
 setup(
     name="GitHubVectorIssueProcessor",
     version="1.0.0",
-    version="0.1",
-    packages=[
-        "src",
-    ],
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     install_requires=required_packages,
     entry_points={
         "console_scripts": [
-            "github-vector-issue-processor=main:main",
+            "github-vector-issue-processor=src.main:main",
         ],
     },
 )
