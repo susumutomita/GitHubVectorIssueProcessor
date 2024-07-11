@@ -20,11 +20,11 @@ clean:
 
 .PHONY: lint
 lint:
-	black src/ --check
-	isort src/ --check-only
-	cd src && pylint . --rcfile=../.pylintrc
+	black app/ --check
+	isort app/ --check-only
+	cd app && pylint . --rcfile=../.pylintrc
 	yamllint -c .yamllint .
-	flake8 src/
+	flake8 app/
 
 .PHONY: lint_text
 lint_text:
@@ -36,7 +36,7 @@ lint_text_fix:
 
 .PHONY: format
 format:
-	black src/
+	black app/
 	isort .
 
 .PHONY: run
