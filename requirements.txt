@@ -1,9 +1,4 @@
-lxml
-beautifulsoup4
 requests
-datetime
-freezegun
-pre-commit
 pytest
 pytest-cov
 pytest-mock
@@ -13,14 +8,10 @@ yamllint
 black>=24.1.1
 pylint
 flake8
-python-dateutil
 setuptools>=65.5.1
-requests_toolbelt
-openai==1.35.3
 PyGithub==2.3.0
 qdrant-client==1.9.2
 python-dotenv==0.15.0
 regex==2024.5.15
-AzureOpenAI
 groq
 nomic

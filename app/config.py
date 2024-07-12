@@ -4,7 +4,6 @@ information from environment variables.
 """
 
 import os
-
 from dotenv import load_dotenv
 
 
@@ -34,6 +33,7 @@ class Config:
         Load environment variables from a .env file if not running in GitHub Actions.
         """
         if not os.getenv("GITHUB_ACTIONS"):
+            print("loading from .env")
             load_dotenv()
 
         self.github_token = os.getenv("GITHUB_TOKEN")
