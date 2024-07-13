@@ -25,21 +25,29 @@ The primary use case of GitHubVectorIssueProcessor is to automate the management
 GitHubVectorIssueProcessor/
 ├── .github/
 │   ├── workflows/
-│   │   └── ci.yml  # GitHub Actionsのワークフロー定義
-├── src/
-│   ├── __init__.py  # パッケージ化のためのファイル
-│   ├── config.py  # 設定クラス
-│   ├── content_moderator.py  # コンテンツモデレータ
-│   ├── github_handler.py  # GitHubハンドラー
-│   ├── issue_processor.py  # Issueプロセッサ
-│   ├── main.py  # メインエントリーポイント
-│   └── qdrant_handler.py  # Qdrantハンドラー
-├── .env.example  # 環境変数のサンプルファイル
-├── .gitignore  # Gitの無視ファイル
-├── LICENSE  # ライセンスファイル
-├── README.md  # 説明ファイル
-├── requirements.txt  # 依存関係
-└── setup.py  # パッケージ設定
+│   │   └── ci.yml  # GitHub Actions workflow definition
+├── app/
+│   ├── __init__.py  # For package initialization
+│   ├── config.py  # Configuration class
+│   ├── content_moderator.py  # Content Moderator
+│   ├── github_handler.py  # GitHub Handler
+│   ├── issue_processor.py  # Issue Processor
+│   ├── main.py  # Main entry point
+│   └── qdrant_handler.py  # Qdrant Handler
+├── tests/  # Test files
+│   ├── __init__.py  # For package initialization
+│   ├── test_config.py  # Tests for Config class
+│   ├── test_content_moderator.py  # Tests for ContentModerator class
+│   ├── test_github_handler.py  # Tests for GithubHandler class
+│   ├── test_issue_processor.py  # Tests for IssueProcessor class
+│   └── test_qdrant_handler.py  # Tests for QdrantHandler class
+├── .env.example  # Sample environment variables file
+├── .gitignore  # Git ignore file
+├── LICENSE  # License file
+├── README.md  # Documentation file
+├── requirements.txt  # Dependencies
+├── setup.py  # Package setup
+└── Makefile  # Makefile for build and management
 ```
 
 ## Installation
@@ -65,9 +73,9 @@ GitHubVectorIssueProcessor/
     make install
     ```
 
-4. Set up your environment variables:
+3. Set up your environment variables:
 
-    Create a `.env` file in the root directory based on the `.env_sample` file and add the necessary variables:
+    Create a `.env` file in the root directory based on the `.env.example` file and add the necessary variables:
 
     ```plaintext
     # Groq API Key
@@ -82,9 +90,6 @@ GitHubVectorIssueProcessor/
 
     # Nomic API Key
     NOMIC_API_KEY=nk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-    # Python Path
-    PYTHONPATH=$(pwd)/src:$PYTHONPATH
     ```
 
     Replace the placeholder values (`XXXXXXXXXXXX...`) with your actual API keys and relevant information.
@@ -95,6 +100,12 @@ GitHubVectorIssueProcessor/
 
     ```bash
     make run
+    ```
+
+2. To run tests:
+
+    ```bash
+    make test
     ```
 
 ## Supported Vector Databases

@@ -11,32 +11,15 @@ from dotenv import load_dotenv
 class Config:
     """
     A class to load and store configuration information from environment variables.
-
-    Attributes:
-        github_token (str): GitHub API token.
-        qd_api_key (str): Qdrant API key.
-        qd_url (str): Qdrant URL.
-        github_repo (str): GitHub repository name.
-        issue_number (int): GitHub issue number.
-        nomic_api_key (str): Nomic API key.
     """
 
-    def __init__(self):
+    def __init__(self, env_file=".env"):
         """
-        Initialize the Config class by loading environment variables.
+        Initialize the Config class by loading environment variables from a .env file if provided.
         """
         print("設定の初期化を開始します...")
-        self.load_env_variables()
-        self.print_config_status()
-
-    def load_env_variables(self):
-        """
-        Load environment variables from a .env file if not running in GitHub Actions.
-        """
-        if not os.getenv("GITHUB_ACTIONS"):
-            print("loading from .env")
-            load_dotenv()
-
+        if os.path.exists(env_file):
+            load_dotenv(env_file)
         self.github_token = os.getenv("GITHUB_TOKEN")
         self.qd_api_key = os.getenv("QD_API_KEY")
         self.qd_url = os.getenv("QD_URL")
@@ -45,6 +28,7 @@ class Config:
         if self.issue_number:
             self.issue_number = int(self.issue_number)
         self.nomic_api_key = os.getenv("NOMIC_API_KEY")
+        self.print_config_status()
 
     def print_config_status(self):
         """

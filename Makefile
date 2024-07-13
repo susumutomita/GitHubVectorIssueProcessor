@@ -14,6 +14,22 @@ install_node_deps:
 setup_husky:
 	npm run prepare
 
+.PHONY: test
+test:
+	python -m pytest -v
+
+.PHONY: test_coverage
+test_coverage:
+	python -m pytest  -v --cov=app
+
+.PHONY: test_debug
+test_debug:
+	python -m pytest -vv -o log_cli=true
+
+.PHONY: test_watch
+test_watch:
+	ptw
+
 .PHONY: clean
 clean:
 	npm run clean
@@ -44,4 +60,4 @@ run:
 	github-vector-issue-processor
 
 .PHONY: before_commit
-before_commit: format lint lint_text
+before_commit: format lint lint_text test
