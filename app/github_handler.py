@@ -6,6 +6,8 @@ to manage issues and labels.
 from github import Github
 from github.GithubException import GithubException, UnknownObjectException
 
+from app.config import get_env_var
+
 
 class GithubHandler:
     """
@@ -17,17 +19,16 @@ class GithubHandler:
         issue (Issue): The issue to manage.
     """
 
-    def __init__(self, config):
+    def __init__(self):
         """
-        Initialize the GithubHandler with the given configuration.
-
-        Args:
-            config (Config): An instance of the Config class containing the GitHub token,
-                             repository name, and issue number.
+        Initialize the GithubHandler by loading environment variables for GitHub.
         """
-        self.github = Github(config.github_token)
-        self.repo = self.github.get_repo(config.github_repo)
-        self.issue = self.repo.get_issue(config.issue_number)
+        github_token = get_env_var("GITHUB_TOKEN")
+        github_repo = get_env_var("GITHUB_REPOSITORY")
+        issue_number = get_env_var("GITHUB_EVENT_ISSUE_NUMBER")
+        self.github = Github(github_token)
+        self.repo = self.github.get_repo(github_repo)
+        self.issue = self.repo.get_issue(int(issue_number))
 
     def create_labels(self):
         """
