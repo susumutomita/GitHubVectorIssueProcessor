@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-
 from app.groq_handler import GroqHandler
 from app.qdrant_handler import QdrantHandler
 
