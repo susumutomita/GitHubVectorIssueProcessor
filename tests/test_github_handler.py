@@ -1,6 +1,5 @@
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from app.github_handler import GithubHandler
 
