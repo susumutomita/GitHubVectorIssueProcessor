@@ -22,7 +22,6 @@ class GroqHandler:
         """
         api_key = get_env_var("GROQ_API_KEY")
         self.groq_client = Groq(api_key=api_key)
-        print("Environment variable GROQ_API_KEY loaded successfully.")
 
     def get_client(self):
         """
