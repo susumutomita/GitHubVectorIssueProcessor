@@ -2,9 +2,12 @@
 This module contains common utilities for loading and validating environment variables.
 """
 
+import logging
 import os
 
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 
 def load_env(env_file=".env"):
@@ -15,7 +18,7 @@ def load_env(env_file=".env"):
         load_dotenv(env_file)
 
 
-def get_env_var(var_name, default=None, required=True, log=True):
+def get_env_var(var_name, default=None, required=True):
     """
     Get an environment variable's value, with optional default and required flag.
 
@@ -23,7 +26,6 @@ def get_env_var(var_name, default=None, required=True, log=True):
         var_name (str): The name of the environment variable.
         default (any): The default value if the environment variable is not set.
         required (bool): Whether the environment variable is required.
-        log (bool): Whether to log the success or failure of retrieving the variable.
 
     Returns:
         any: The value of the environment variable.
@@ -33,9 +35,8 @@ def get_env_var(var_name, default=None, required=True, log=True):
     """
     value = os.getenv(var_name, default)
     if required and value is None:
-        if log:
-            print(f"Environment variable {var_name} is missing or empty.")
+        logger.error("Missing required environment variable: %s", var_name)
         raise ValueError(f"Missing required environment variable: {var_name}")
-    if log:
-        print(f"Environment variable {var_name} loaded successfully.")
+    if value is not None:
+        logger.info("Environment variable %s loaded successfully.", var_name)
     return value

@@ -3,12 +3,17 @@ This module contains the QdrantHandler class, which is responsible for interacti
 vector database and Groq client to handle issue embeddings and search similar issues.
 """
 
+import logging
+
 import requests
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 from requests.exceptions import RequestException
 
 from app.config import get_env_var
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class QdrantHandler:
@@ -39,13 +44,14 @@ class QdrantHandler:
         """
         try:
             self.client.get_collection(collection_name="issue_collection")
+            logger.info("Collection 'issue_collection' exists.")
         except RequestException as e:
-            print(f"Collection not found, creating a new one. Details: {e}")
+            logger.warning("Collection not found, creating a new one. Details: %s", e)
             self.client.create_collection(
                 collection_name="issue_collection",
                 vectors_config=VectorParams(size=768, distance=Distance.COSINE),
             )
-            print("Collection 'issue_collection' created successfully.")
+            logger.info("Collection 'issue_collection' created successfully.")
 
     def add_issue(self, text, issue_number):
         """
@@ -58,6 +64,7 @@ class QdrantHandler:
         embedding = self._create_embedding(text)
         point = PointStruct(id=issue_number, vector=embedding, payload={"text": text})
         self.client.upsert("issue_collection", [point])
+        logger.info("Issue #%d added to the 'issue_collection'.", issue_number)
 
     def search_similar_issues(self, text):
         """
@@ -73,6 +80,7 @@ class QdrantHandler:
         results = self.client.search(
             collection_name="issue_collection", query_vector=embedding
         )
+        logger.info("Found %d similar issues.", len(results))
         return results[:3]
 
     def _create_embedding(self, text):
@@ -101,4 +109,6 @@ class QdrantHandler:
         if response.status_code == 200:
             embedding = response.json()["embeddings"][0]
             return embedding
+
+        logger.error("Failed to create embedding: %s", response.content)
         raise ValueError(f"Failed to create embedding: {response.content}")

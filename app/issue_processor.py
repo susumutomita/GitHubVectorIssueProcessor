@@ -3,6 +3,10 @@ This module processes GitHub issues, moderates their content,
 and checks for duplicates using Qdrant.
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class IssueProcessor:
     """
@@ -36,9 +40,6 @@ class IssueProcessor:
         """
         if self.content_moderator.judge_violation(issue_content):
             self.handle_violation()
-        logger = logging.getLogger(__name__)
-        if self.content_moderator.judge_violation(issue_content):
-            self.handle_violation()
             logger.info("Issue marked as toxic and closed.")
             return
 
@@ -53,7 +54,9 @@ class IssueProcessor:
         duplicate_id = self._check_duplication(issue_content, similar_issues)
         if duplicate_id:
             self._handle_duplication(duplicate_id)
-            logger.info("Issue marked as duplicated and closed. Duplicate ID: %s", duplicate_id)
+            logger.info(
+                "Issue marked as duplicated and closed. Duplicate ID: %s", duplicate_id
+            )
         else:
             self.qdrant_handler.add_issue(
                 issue_content, self.github_handler.issue.number
@@ -98,7 +101,14 @@ class IssueProcessor:
             duplicate_id (int): The ID of the duplicate issue.
         """
         self.github_handler.add_label("duplicated")
-        self.github_handler.add_comment(f"#{duplicate_id} と重複しているかもしれません")
+        duplicate_issue_url = (
+            f"https://github.com/{self.github_handler.repo.full_name}/issues/"
+            f"{duplicate_id}"
+        )
+        self.github_handler.add_comment(
+            f"#{duplicate_id} と重複しているかもしれません。"
+            f"詳細は次のURLを参照してください: {duplicate_issue_url}"
+        )
 
     @staticmethod
     def _create_duplication_check_prompt(issue_content: str, similar_issues):
