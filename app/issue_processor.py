@@ -36,7 +36,10 @@ class IssueProcessor:
         """
         if self.content_moderator.judge_violation(issue_content):
             self.handle_violation()
-            print("Issue marked as toxic and closed.")
+        logger = logging.getLogger(__name__)
+        if self.content_moderator.judge_violation(issue_content):
+            self.handle_violation()
+            logger.info("Issue marked as toxic and closed.")
             return
 
         similar_issues = self.qdrant_handler.search_similar_issues(issue_content)
@@ -44,20 +47,18 @@ class IssueProcessor:
             self.qdrant_handler.add_issue(
                 issue_content, self.github_handler.issue.number
             )
-            print("No similar issues found. Issue added to Qdrant.")
+            logger.info("No similar issues found. Issue added to Qdrant.")
             return
 
         duplicate_id = self._check_duplication(issue_content, similar_issues)
         if duplicate_id:
             self._handle_duplication(duplicate_id)
-            print(
-                f"Issue marked as duplicated and closed. Duplicate ID: {duplicate_id}"
-            )
+            logger.info("Issue marked as duplicated and closed. Duplicate ID: %s", duplicate_id)
         else:
             self.qdrant_handler.add_issue(
                 issue_content, self.github_handler.issue.number
             )
-            print("No duplication found. Issue added to Qdrant.")
+            logger.info("No duplication found. Issue added to Qdrant.")
 
     def handle_violation(self):
         """Handle issues with content violations."""
