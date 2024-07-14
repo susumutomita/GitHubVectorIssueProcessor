@@ -3,11 +3,12 @@ This module contains the QdrantHandler class, which is responsible for interacti
 vector database and Groq client to handle issue embeddings and search similar issues.
 """
 
-import os
-
 import requests
+from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 from requests.exceptions import RequestException
+
+from app.config import get_env_var
 
 
 class QdrantHandler:
@@ -19,15 +20,16 @@ class QdrantHandler:
         groq_client (Groq): An instance of the Groq client.
     """
 
-    def __init__(self, client, groq_client):
+    def __init__(self, groq_client):
         """
-        Initialize the QdrantHandler with the given clients and ensure the collection exists.
+        Initialize the QdrantHandler with the Qdrant client and ensure the collection exists.
 
         Args:
-            client (QdrantClient): An instance of the QdrantClient.
             groq_client (Groq): An instance of the Groq client.
         """
-        self.client = client
+        url = get_env_var("QD_URL")
+        api_key = get_env_var("QD_API_KEY")
+        self.client = QdrantClient(url=url, api_key=api_key)
         self.groq_client = groq_client
         self._ensure_collection_exists()
 
@@ -88,7 +90,7 @@ class QdrantHandler:
         """
         url = "https://api-atlas.nomic.ai/v1/embedding/text"
         headers = {
-            "Authorization": f"Bearer {os.getenv('NOMIC_API_KEY')}",
+            "Authorization": f"Bearer {get_env_var('NOMIC_API_KEY')}",
             "Content-Type": "application/json",
         }
         data = {

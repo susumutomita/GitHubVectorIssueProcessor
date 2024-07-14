@@ -1,49 +1,72 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.config import Config
 from app.github_handler import GithubHandler
 
 
-@pytest.fixture
-def mock_github(monkeypatch):
-    monkeypatch.setenv("GITHUB_TOKEN", "fake_github_token")
-    monkeypatch.setenv("GITHUB_REPOSITORY", "fake_repository")
-    monkeypatch.setenv("GITHUB_EVENT_ISSUE_NUMBER", "123")
-    monkeypatch.setenv("NOMIC_API_KEY", "fake_nomic_api_key")
-    monkeypatch.setenv("QD_API_KEY", "fake_qd_api_key")
-    monkeypatch.setenv("QD_URL", "https://fake_qd_url")
-
-    mock_github = MagicMock()
-    monkeypatch.setattr("app.github_handler.Github", mock_github)
-    return mock_github
-
-
+@patch("app.github_handler.Github")
 def test_create_labels(mock_github):
-    config = Config()
-    github_handler = GithubHandler(config)
-    github_handler.create_labels()
-    github_handler.repo.create_label.assert_any_call(name="toxic", color="ff0000")
-    github_handler.repo.create_label.assert_any_call(name="duplicated", color="708090")
+    # Mock the necessary GitHub objects and methods
+    mock_repo = MagicMock()
+    mock_github_instance = mock_github.return_value
+    mock_github_instance.get_repo.return_value = mock_repo
+
+    # Create GithubHandler instance
+    handler = GithubHandler()
+
+    # Call the method and verify the expected interactions
+    handler.create_labels()
+    mock_repo.create_label.assert_any_call(name="toxic", color="ff0000")
+    mock_repo.create_label.assert_any_call(name="duplicated", color="708090")
 
 
+@patch("app.github_handler.Github")
 def test_add_label(mock_github):
-    config = Config()
-    github_handler = GithubHandler(config)
-    github_handler.add_label("test_label")
-    github_handler.issue.add_to_labels.assert_called_with("test_label")
+    # Mock the necessary GitHub objects and methods
+    mock_issue = MagicMock()
+    mock_repo = MagicMock()
+    mock_github_instance = mock_github.return_value
+    mock_github_instance.get_repo.return_value = mock_repo
+    mock_repo.get_issue.return_value = mock_issue
+
+    # Create GithubHandler instance
+    handler = GithubHandler()
+
+    # Call add_label and verify the expected interactions
+    handler.add_label("toxic")
+    mock_issue.add_to_labels.assert_called_once_with("toxic")
 
 
+@patch("app.github_handler.Github")
 def test_close_issue(mock_github):
-    config = Config()
-    github_handler = GithubHandler(config)
-    github_handler.close_issue()
-    github_handler.issue.edit.assert_called_with(state="closed")
+    # Mock the necessary GitHub objects and methods
+    mock_issue = MagicMock()
+    mock_repo = MagicMock()
+    mock_github_instance = mock_github.return_value
+    mock_github_instance.get_repo.return_value = mock_repo
+    mock_repo.get_issue.return_value = mock_issue
+
+    # Create GithubHandler instance
+    handler = GithubHandler()
+
+    # Call close_issue and verify the expected interactions
+    handler.close_issue()
+    mock_issue.edit.assert_called_once_with(state="closed")
 
 
+@patch("app.github_handler.Github")
 def test_add_comment(mock_github):
-    config = Config()
-    github_handler = GithubHandler(config)
-    github_handler.add_comment("test_comment")
-    github_handler.issue.create_comment.assert_called_with("test_comment")
+    # Mock the necessary GitHub objects and methods
+    mock_issue = MagicMock()
+    mock_repo = MagicMock()
+    mock_github_instance = mock_github.return_value
+    mock_github_instance.get_repo.return_value = mock_repo
+    mock_repo.get_issue.return_value = mock_issue
+
+    # Create GithubHandler instance
+    handler = GithubHandler()
+
+    # Call add_comment and verify the expected interactions
+    handler.add_comment("This is a test comment.")
+    mock_issue.create_comment.assert_called_once_with("This is a test comment.")
