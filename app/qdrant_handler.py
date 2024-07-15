@@ -7,8 +7,8 @@ import logging
 
 import requests
 from qdrant_client import QdrantClient
+from qdrant_client.http.exceptions import UnexpectedResponse  # ここを追加
 from qdrant_client.models import Distance, PointStruct, VectorParams
-from requests.exceptions import RequestException
 
 from app.config import get_env_var
 
@@ -34,6 +34,7 @@ class QdrantHandler:
         """
         url = get_env_var("QD_URL")
         api_key = get_env_var("QD_API_KEY")
+        self.collection_name = get_env_var("GITHUB_REPOSITORY").replace("/", "-")
         self.client = QdrantClient(url=url, api_key=api_key)
         self.groq_client = groq_client
         self._ensure_collection_exists()
@@ -43,15 +44,27 @@ class QdrantHandler:
         Ensure the collection exists in Qdrant. If not, create a new one.
         """
         try:
-            self.client.get_collection(collection_name="issue_collection")
-            logger.info("Collection 'issue_collection' exists.")
-        except RequestException as e:
-            logger.warning("Collection not found, creating a new one. Details: %s", e)
-            self.client.create_collection(
-                collection_name="issue_collection",
-                vectors_config=VectorParams(size=768, distance=Distance.COSINE),
-            )
-            logger.info("Collection 'issue_collection' created successfully.")
+            self.client.get_collection(collection_name=self.collection_name)
+            logger.info("Collection %s exists.", self.collection_name)
+        except UnexpectedResponse as e:
+            if e.status_code == 404:
+                logger.warning(
+                    "Collection not found, creating a new one. Details: %s", e
+                )
+                try:
+                    self.client.create_collection(
+                        collection_name=self.collection_name,
+                        vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+                    )
+                    logger.info(
+                        "Collection %s created successfully.", self.collection_name
+                    )
+                except UnexpectedResponse as create_e:
+                    logger.error("Failed to create collection: %s", create_e)
+                    raise
+            else:
+                logger.error("Error checking collection existence: %s", e)
+                raise
 
     def add_issue(self, text, issue_number):
         """
@@ -63,8 +76,8 @@ class QdrantHandler:
         """
         embedding = self._create_embedding(text)
         point = PointStruct(id=issue_number, vector=embedding, payload={"text": text})
-        self.client.upsert("issue_collection", [point])
-        logger.info("Issue #%d added to the 'issue_collection'.", issue_number)
+        self.client.upsert(self.collection_name, [point])
+        logger.info("Issue #%d added to the %s.", issue_number, self.collection_name)
 
     def search_similar_issues(self, text):
         """
@@ -78,7 +91,7 @@ class QdrantHandler:
         """
         embedding = self._create_embedding(text)
         results = self.client.search(
-            collection_name="issue_collection", query_vector=embedding
+            collection_name=self.collection_name, query_vector=embedding
         )
         logger.info("Found %d similar issues.", len(results))
         return results[:3]
