@@ -1,0 +1,44 @@
+# action.yml
+name: 'GitHub Vector Issue Processor'
+description: 'Process GitHub issues, moderate content, and check for duplicates.'
+author: 'susumu tomita'
+inputs:
+  github-token:
+    description: 'GitHub token to access the repository.'
+    required: true
+  qd-url:
+    description: 'URL of the Qdrant instance.'
+    required: true
+  qd-api-key:
+    description: 'API key for the Qdrant instance.'
+    required: true
+  groq-api-key:
+    description: 'API key for the Groq client.'
+    required: true
+  nomic-api-key:
+    description: 'API key for the Nomic client.'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: make install
+
+    - name: Review Issue with LLM
+      env:
+        GROQ_API_KEY: ${{ inputs.groq-api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        QD_API_KEY: ${{ inputs.qd-api-key }}
+        QD_URL: ${{ inputs.qd-url }}
+        NOMIC_API_KEY: ${{ inputs.nomic-api-key }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+      run: make run
