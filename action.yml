@@ -18,6 +18,12 @@ inputs:
   nomic-api-key:
     description: 'API key for the Nomic client.'
     required: true
+  github-repository:
+    description: 'GitHub repository name.'
+    required: true
+  github-event-issue-number:
+    description: 'GitHub issue number.'
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -39,6 +45,6 @@ runs:
         QD_API_KEY: ${{ inputs.qd-api-key }}
         QD_URL: ${{ inputs.qd-url }}
         NOMIC_API_KEY: ${{ inputs.nomic-api-key }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        GITHUB_REPOSITORY: ${{ inputs.github-repository }}
+        GITHUB_EVENT_ISSUE_NUMBER: ${{ inputs.github-event-issue-number }}
       run: make run
