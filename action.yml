@@ -37,6 +37,7 @@ runs:
 
     - name: Install dependencies
       run: make install
+      shell: bash
 
     - name: Review Issue with LLM
       env:
@@ -48,3 +49,4 @@ runs:
         GITHUB_REPOSITORY: ${{ inputs.github-repository }}
         GITHUB_EVENT_ISSUE_NUMBER: ${{ inputs.github-event-issue-number }}
       run: make run
+      shell: bash
