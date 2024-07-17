@@ -45,6 +45,11 @@ runs:
       with:
         python-version: '3.x'
 
+    - name: execute ls
+      run: ls -al
+      working-directory: ./template-repo
+      shell: bash
+
     - name: Install dependencies
       run: make install
       working-directory: ./template-repo
