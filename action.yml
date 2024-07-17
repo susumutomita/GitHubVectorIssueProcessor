@@ -1,3 +1,4 @@
+# action.yml
 name: 'GitHub Vector Issue Processor'
 description: 'Process GitHub issues, moderate content, and check for duplicates.'
 author: 'susumu tomita'
@@ -46,7 +47,7 @@ runs:
 
     - name: Install dependencies
       run: make install
-      working-directory: ./target-repo
+      working-directory: ./template-repo
       shell: bash
 
     - name: Review Issue with LLM
@@ -59,5 +60,5 @@ runs:
         GITHUB_REPOSITORY: ${{ inputs.github-repository }}
         GITHUB_EVENT_ISSUE_NUMBER: ${{ inputs.github-event-issue-number }}
       run: make run
-      working-directory: ./target-repo
+      working-directory: ./template-repo
       shell: bash
