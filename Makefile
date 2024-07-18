@@ -1,5 +1,5 @@
 .PHONY: install
-install: install_python_deps install_node_deps setup_husky
+install: install_python_deps install_node_deps
 
 .PHONY: install_python_deps
 install_python_deps:
