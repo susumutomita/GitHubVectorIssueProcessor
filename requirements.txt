@@ -11,7 +11,7 @@ flake8
 setuptools>=65.5.1
 PyGithub==2.3.0
 qdrant-client==1.9.2
-python-dotenv==0.15.0
+python-dotenv
 regex==2024.5.15
 groq
 nomic
