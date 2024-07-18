@@ -64,7 +64,7 @@ The primary use case of GitHubVectorIssueProcessor is to automate the management
 
 1. **Vector Databases**: Vector databases allow for efficient similarity search, which is crucial for identifying duplicate issues. By storing issue content as high-dimensional vectors, we can quickly find and compare similar issues.
 
-2. **AI Models**: AI models enable advanced content analysis, such as identifying inappropriate content and generating embeddings for vector search. The flexibility to use different AI models (OpenAI, Azure OpenAI, local models currently support Groq because everything is free so to start it it is reasonable) ensures that the tool can be tailored to various enterprise needs and resource availability.
+2. **AI Models**: AI models enable advanced content analysis, such as identifying inappropriate content and generating embeddings for vector search. The flexibility to use different AI models (OpenAI, Azure OpenAI, local models currently support Groq because everything is free, so to start it it is reasonable) ensures that the tool can be tailored to various enterprise needs and resource availability.
 
 ## Getting API Keys
 
