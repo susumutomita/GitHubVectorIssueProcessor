@@ -15,6 +15,10 @@ jobs:
         with:
           node-version: latest
           cache: 'npm'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       - name: Install packages via packages.json
         run: make install
       - name: Run lint
