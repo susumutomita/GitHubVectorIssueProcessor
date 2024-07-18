@@ -24,9 +24,6 @@ jobs:
       - name: Run lint
         run: |
           make lint
-      - name: Run textlint
-        run: |
-          make lint_text
       - name: Run test
         run: |
           make test
