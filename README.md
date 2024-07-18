@@ -7,7 +7,54 @@
 
 # GitHubVectorIssueProcessor
 
-GitHubVectorIssueProcessor is a tool for processing GitHub issues using vector databases and AI models. It supports multiple vector databases and AI models, making it flexible and adaptable for various use cases.
+This action provides the following functionality for GitHub Actions users:
+
+- GitHubVectorIssueProcessor is a tool for processing GitHub issues using vector databases and AI models.
+- AI reviews your issue and marks it as duplicated if a similar issue already exists.
+
+## Usage
+
+See [action.yml](action.yml)
+
+<!-- start usage -->
+```yaml
+name: Issue Review
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  review_issue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Review Issue with LLM
+        uses: susumutomita/GitHubVectorIssueProcessor@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          qd-url: ${{ secrets.QD_URL }}
+          qd-api-key: ${{ secrets.QD_API_KEY }}
+          groq-api-key: ${{ secrets.GROQ_API_KEY }}
+          nomic-api-key: ${{ secrets.NOMIC_API_KEY }}
+          github-event-issue-number: ${{ github.event.issue.number }}
+          github-repository: ${{ github.repository }}
+```
+<!-- end usage -->
 
 ## Main Use Case
 
@@ -17,38 +64,26 @@ The primary use case of GitHubVectorIssueProcessor is to automate the management
 
 1. **Vector Databases**: Vector databases allow for efficient similarity search, which is crucial for identifying duplicate issues. By storing issue content as high-dimensional vectors, we can quickly find and compare similar issues.
 
-2. **AI Models**: AI models enable advanced content analysis, such as identifying inappropriate content and generating embeddings for vector search. The flexibility to use different AI models (OpenAI, Azure OpenAI, local models) ensures that the tool can be tailored to various enterprise needs and resource availability.
+2. **AI Models**: AI models enable advanced content analysis, such as identifying inappropriate content and generating embeddings for vector search. The flexibility to use different AI models (OpenAI, Azure OpenAI, local models currently support Groq because everything is free so to start it it is reasonable) ensures that the tool can be tailored to various enterprise needs and resource availability.
 
-## Code Structure
+## Getting API Keys
 
-```plaintext
-GitHubVectorIssueProcessor/
-├── .github/
-│   ├── workflows/
-│   │   └── ci.yml  # GitHub Actions workflow definition
-├── app/
-│   ├── __init__.py  # For package initialization
-│   ├── config.py  # Configuration class
-│   ├── content_moderator.py  # Content Moderator
-│   ├── github_handler.py  # GitHub Handler
-│   ├── issue_processor.py  # Issue Processor
-│   ├── main.py  # Main entry point
-│   └── qdrant_handler.py  # Qdrant Handler
-├── tests/  # Test files
-│   ├── __init__.py  # For package initialization
-│   ├── test_config.py  # Tests for Config class
-│   ├── test_content_moderator.py  # Tests for ContentModerator class
-│   ├── test_github_handler.py  # Tests for GithubHandler class
-│   ├── test_issue_processor.py  # Tests for IssueProcessor class
-│   └── test_qdrant_handler.py  # Tests for QdrantHandler class
-├── .env.example  # Sample environment variables file
-├── .gitignore  # Git ignore file
-├── LICENSE  # License file
-├── README.md  # Documentation file
-├── requirements.txt  # Dependencies
-├── setup.py  # Package setup
-└── Makefile  # Makefile for build and management
-```
+To use GitHubVectorIssueProcessor, you need to obtain API keys for the following services:
+
+1. **Groq API Key**:
+   - Sign up or log in to [Groq](https://groq.com).
+   - Navigate to the API section in your account settings.
+   - Generate a new API key.
+
+2. **Qdrant API Key and URL**:
+   - Sign up or log in to [Qdrant](https://qdrant.tech).
+   - Navigate to the API section in your account settings.
+   - Generate a new API key and obtain the URL of your Qdrant instance.
+
+3. **Nomic API Key**:
+   - Sign up or log in to [Nomic](https://nomic.ai).
+   - Navigate to the API section in your account settings.
+   - Generate a new API key.
 
 ## Installation
 
@@ -56,7 +91,7 @@ GitHubVectorIssueProcessor/
 
 - Python 3.8+
 - pip
-- Docker (for Qdrant and local testing)
+- Node.js
 
 ### Setup
 
@@ -67,13 +102,7 @@ GitHubVectorIssueProcessor/
     cd GitHubVectorIssueProcessor
     ```
 
-2. Install dependencies:
-
-    ```bash
-    make install
-    ```
-
-3. Set up your environment variables:
+2. Set up your environment variables:
 
     Create a `.env` file in the root directory based on the `.env.example` file and add the necessary variables:
 
@@ -94,15 +123,19 @@ GitHubVectorIssueProcessor/
 
     Replace the placeholder values (`XXXXXXXXXXXX...`) with your actual API keys and relevant information.
 
-## Usage
+3. Install dependencies:
 
-1. To process GitHub issues, run the following command:
+    ```bash
+    make install
+    ```
+
+4. To process GitHub issues, run the following command:
 
     ```bash
     make run
     ```
 
-2. To run tests:
+To run tests:
 
     ```bash
     make test
@@ -111,15 +144,15 @@ GitHubVectorIssueProcessor/
 ## Supported Vector Databases
 
 - Qdrant
-- PostgreSQL (local)
-- Azure AI search
+- PostgreSQL (local) (future plan)
+- Azure AI search (future plan)
 
 ## Supported AI Models
 
-- OpenAI
-- Azure OpenAI
+- OpenAI (future plan)
+- Azure OpenAI (future plan)
 - Groq
-- Local models (e.g., Llama3)
+- Local models (e.g., Llama3) (future plan)
 
 ## Inspiration
 
@@ -130,3 +163,7 @@ This project was inspired by [takahiroanno2024/election2024](https://github.com/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 The inspiration for this project, [takahiroanno2024/election2024](https://github.com/takahiroanno2024/election2024), is licensed under the Attribution 4.0 International (CC BY 4.0) License. The full text of this license is included in the [CC_BY_LICENSE](CC_BY_LICENSE) file.
+
+## Contributions
+
+Contributions are welcome. See our [Contributor's Guide](docs/contributors.md).
