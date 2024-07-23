@@ -3,8 +3,12 @@ This module contains the ContentModerator class, which is responsible for modera
 validating images and judging text violations using the Groq client.
 """
 
+import logging
+
 import regex as re
 from requests.exceptions import RequestException
+
+logger = logging.getLogger(__name__)
 
 
 class ContentModerator:
@@ -105,7 +109,7 @@ class ContentModerator:
             )
             return response.choices[0].message.content.strip()
         except RequestException as e:
-            print(f"Error during rephrasing: {e}")
+            logger.error("Error during rephrasing: %s", e)
             return text
 
     @staticmethod
