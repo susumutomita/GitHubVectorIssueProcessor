@@ -3,8 +3,12 @@ This module contains the ContentModerator class, which is responsible for modera
 validating images and judging text violations using the Groq client.
 """
 
+import logging
+
 import regex as re
 from requests.exceptions import RequestException
+
+logger = logging.getLogger(__name__)
 
 
 class ContentModerator:
@@ -80,6 +84,33 @@ class ContentModerator:
             return "true" in response.choices[0].message.content.lower()
         except RequestException:
             return True
+
+    def rephrase_inappropriate_comment(self, text: str) -> str:
+        """
+        Rephrase inappropriate comments to make them non-offensive.
+
+        Args:
+            text (str): The text content to rephrase.
+
+        Returns:
+            str: The rephrased text.
+        """
+        prompt = f"次の文を攻撃的でないように言い換えてください: {text}"
+        try:
+            response = self.groq_client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                max_tokens=150,
+            )
+            return response.choices[0].message.content.strip()
+        except RequestException as e:
+            logger.error("Error during rephrasing: %s", e)
+            return text
 
     @staticmethod
     def _extract_image_url(text):

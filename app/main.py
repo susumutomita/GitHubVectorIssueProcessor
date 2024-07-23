@@ -38,7 +38,17 @@ def main():
     github_handler, content_moderator, qdrant_handler = setup()
     issue_processor = IssueProcessor(github_handler, content_moderator, qdrant_handler)
     issue_content = f"{github_handler.issue.title}\n{github_handler.issue.body}"
-    issue_processor.process_issue(issue_content)
+    issue_processor.process_opened_issue(issue_content)
+
+
+def process_new_comment():
+    """
+    Function to process new comments on GitHub issues.
+    """
+    github_handler, content_moderator, qdrant_handler = setup()
+    issue_processor = IssueProcessor(github_handler, content_moderator, qdrant_handler)
+    comment_content = github_handler.issue.get_comments()[-1].body
+    issue_processor.process_new_comment(comment_content)
 
 
 if __name__ == "__main__":

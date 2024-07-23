@@ -31,18 +31,13 @@ class IssueProcessor:
         self.content_moderator = content_moderator
         self.qdrant_handler = qdrant_handler
 
-    def process_issue(self, issue_content: str):
+    def process_opened_issue(self, issue_content: str):
         """
-        Process the given GitHub issue content.
+        Process the given GitHub issue content when the issue is opened.
 
         Args:
             issue_content (str): The content of the GitHub issue.
         """
-        if self.content_moderator.judge_violation(issue_content):
-            self.handle_violation()
-            logger.info("Issue marked as toxic and closed.")
-            return
-
         similar_issues = self.qdrant_handler.search_similar_issues(issue_content)
         if not similar_issues:
             self.qdrant_handler.add_issue(
@@ -63,13 +58,27 @@ class IssueProcessor:
             )
             logger.info("No duplication found. Issue added to Qdrant.")
 
-    def handle_violation(self):
-        """Handle issues with content violations."""
+    def process_new_comment(self, comment_content: str):
+        """
+        Process the given GitHub issue comment content.
+
+        Args:
+            comment_content (str): The content of the GitHub issue comment.
+        """
+        if self.content_moderator.judge_violation(comment_content):
+            self.handle_violation(comment_content)
+            logger.info("Comment marked as toxic and rephrased.")
+
+    def handle_violation(self, comment_content: str):
+        """Handle comments with content violations."""
+        rephrased_content = self.content_moderator.rephrase_inappropriate_comment(
+            comment_content
+        )
         self.github_handler.add_label("toxic")
         self.github_handler.add_comment(
-            "不適切な投稿です。アカウントBANの危険性があります。"
+            f"元のコメントが不適切なため、以下のように修正しました:\n\n{rephrased_content}"
         )
-        self.github_handler.close_issue()
+        self.github_handler.issue.edit(body=rephrased_content)
 
     def _check_duplication(self, issue_content: str, similar_issues):
         """
