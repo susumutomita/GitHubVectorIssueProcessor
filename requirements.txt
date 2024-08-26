@@ -9,7 +9,7 @@ black>=24.1.1
 pylint
 flake8
 setuptools>=65.5.1
-PyGithub==2.3.0
+PyGithub==2.4.0
 qdrant-client==1.9.2
 python-dotenv==1.0.1
 regex==2024.7.24
