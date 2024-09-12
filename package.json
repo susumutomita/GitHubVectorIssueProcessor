@@ -17,7 +17,7 @@
     "typescript": "^5.5.4"
   },
   "devDependencies": {
-    "husky": "^9.1.4",
+    "husky": "^9.1.6",
     "textlint": "^14.0.5",
     "textlint-rule-ja-no-abusage": "^3.0.0",
     "textlint-rule-ja-no-inappropriate-words": "^2.0.0",
