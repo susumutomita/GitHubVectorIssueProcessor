@@ -12,6 +12,6 @@ setuptools>=65.5.1
 PyGithub==2.3.0
 qdrant-client==1.9.2
 python-dotenv==1.0.1
-regex==2024.7.24
+regex==2024.9.11
 groq
 nomic
