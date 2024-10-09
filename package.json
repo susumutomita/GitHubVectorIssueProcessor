@@ -14,7 +14,7 @@
   "author": "Susumu Tomita <oyster880@gmail.com> (https://susumutomita.netlify.app/)",
   "license": "MIT",
   "dependencies": {
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.3"
   },
   "devDependencies": {
     "husky": "^9.1.4",
